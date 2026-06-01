@@ -1,17 +1,17 @@
 {
   "name": "Flutter Codespace",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "features": {},
-  "postCreateCommand": "git clone https://github.com/flutter/flutter.git -b stable ~/flutter || true && echo 'export PATH=~/flutter/bin:$PATH' >> ~/.bashrc && ~/flutter/bin/flutter doctor && ~/flutter/bin/flutter pub get",
+  "image": "ghcr.io/cirruslabs/flutter:stable",
   "customizations": {
     "vscode": {
-      "extensions": [
-        "Dart-Code.dart-code",
-        "Dart-Code.flutter"
-      ],
-      "settings": {
-        "dart.flutterSdkPath": "/home/vscode/flutter"
-      }
+      "extensions": ["Dart-Code.dart-code", "Dart-Code.flutter"]
     }
-  }
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Flutter Web",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "flutter pub get && dart run sqflite_common_ffi_web:setup --force"
 }
