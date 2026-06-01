@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "748988669685",
+    "project_id": "app-financeiro-flutter",
+    "storage_bucket": "app-financeiro-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:748988669685:android:e0ff03c322c84cde606fbc",
+        "android_client_info": {
+          "package_name": "com.example.aplicacao"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkwsBMfN5uP-STIafVc5qQpf0eNhhem_4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
