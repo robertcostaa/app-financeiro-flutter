@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 import '../models/transaction_model.dart';
+import '../providers/app_providers.dart';
 import '../routes/app_routes.dart';
-import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/dashboard_viewmodel.dart';
 import '../views/add_transaction_modal.dart';
 import '../widgets/news_section.dart';
 
-class DashboardView extends StatefulWidget {
+class DashboardView extends ConsumerStatefulWidget {
   const DashboardView({super.key});
 
   @override
-  State<DashboardView> createState() => _DashboardViewState();
+  ConsumerState<DashboardView> createState() => _DashboardViewState();
 }
 
-class _DashboardViewState extends State<DashboardView> {
+class _DashboardViewState extends ConsumerState<DashboardView> {
   final _searchController = TextEditingController();
 
   Category? _selectedCategory;
@@ -34,10 +34,10 @@ class _DashboardViewState extends State<DashboardView> {
     super.initState();
 
     Future.microtask(() {
-      final user = context.read<AuthViewModel>().currentUser;
+      final user = ref.read(authProvider).currentUser;
 
       if (user?.id != null) {
-        context.read<DashboardViewModel>().loadData(user!.id!);
+        ref.read(dashboardProvider).loadData(user!.id!);
       }
     });
   }
@@ -89,14 +89,14 @@ class _DashboardViewState extends State<DashboardView> {
     );
 
     if (confirm == true && mounted) {
-      await context.read<DashboardViewModel>().removeTransaction(transaction);
+      await ref.read(dashboardProvider).removeTransaction(transaction);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthViewModel>();
-    final vm = context.watch<DashboardViewModel>();
+    final auth = ref.watch(authProvider);
+    final vm = ref.watch(dashboardProvider);
     final user = auth.currentUser;
 
     if (user == null) {
@@ -144,8 +144,8 @@ class _DashboardViewState extends State<DashboardView> {
             tooltip: 'Sair',
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await context.read<AuthViewModel>().logout();
-              context.read<DashboardViewModel>().clear();
+              await ref.read(authProvider).logout();
+              ref.read(dashboardProvider).clear();
 
               if (context.mounted) {
                 Navigator.pushReplacementNamed(
@@ -169,7 +169,7 @@ class _DashboardViewState extends State<DashboardView> {
             )
           : RefreshIndicator(
               onRefresh: () {
-                return vm.loadData(user.id!);
+                return ref.read(dashboardProvider).loadData(user.id!);
               },
               child: ListView(
                 padding: const EdgeInsets.all(16),

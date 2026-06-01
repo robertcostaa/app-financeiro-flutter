@@ -1,107 +1,105 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../viewmodels/news_viewmodel.dart';
+import '../providers/app_providers.dart';
 
-class NewsSection extends StatefulWidget {
+class NewsSection extends ConsumerStatefulWidget {
   const NewsSection({super.key});
 
   @override
-  State<NewsSection> createState() => _NewsSectionState();
+  ConsumerState<NewsSection> createState() => _NewsSectionState();
 }
 
-class _NewsSectionState extends State<NewsSection> {
+class _NewsSectionState extends ConsumerState<NewsSection> {
   @override
   void initState() {
     super.initState();
 
     Future.microtask(() {
-      context.read<NewsViewModel>().loadNews();
+      ref.read(newsProvider).loadNews();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<NewsViewModel>(
-      builder: (context, viewModel, _) {
-        if (viewModel.isLoading) {
-          return const _NewsSkeleton();
-        }
+    final viewModel = ref.watch(newsProvider);
 
-        if (viewModel.errorMessage != null) {
-          return Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Indicadores financeiros',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(viewModel.errorMessage!),
-                  const SizedBox(height: 12),
-                  FilledButton.icon(
-                    onPressed: () {
-                      context.read<NewsViewModel>().loadNews();
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Tentar novamente'),
-                  ),
-                ],
+    if (viewModel.isLoading) {
+      return const _NewsSkeleton();
+    }
+
+    if (viewModel.errorMessage != null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Indicadores financeiros',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          );
-        }
-
-        if (viewModel.news.isEmpty) {
-          return const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Nenhum indicador financeiro encontrado.'),
-            ),
-          );
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Indicadores financeiros',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              const SizedBox(height: 12),
+              Text(viewModel.errorMessage!),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: () {
+                  ref.read(newsProvider).loadNews();
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('Tentar novamente'),
               ),
-            ),
-            const SizedBox(height: 12),
-            ...viewModel.news.map(
-              (news) {
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: ListTile(
-                    leading: const Icon(Icons.trending_up),
-                    title: Text(
-                      news.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(
-                      '${news.source}\n${news.description}',
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    isThreeLine: true,
-                  ),
-                );
-              },
-            ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (viewModel.news.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('Nenhum indicador financeiro encontrado.'),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Indicadores financeiros',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ...viewModel.news.map(
+          (news) {
+            return Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                leading: const Icon(Icons.trending_up),
+                title: Text(
+                  news.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  '${news.source}\n${news.description}',
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                isThreeLine: true,
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
