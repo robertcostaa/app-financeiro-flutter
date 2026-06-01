@@ -1,3 +1,4 @@
+import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class AppDatabase {
@@ -6,6 +7,8 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static Database? _database;
+
+  static const String databaseName = 'app_financeiro.db';
 
   Future<Database> get database async {
     if (_database != null) {
@@ -17,16 +20,18 @@ class AppDatabase {
   }
 
   Future<Database> _initDatabase() async {
-    return databaseFactory.openDatabase(
-      'controle_financeiro.db',
-      options: OpenDatabaseOptions(
-        version: 2,
-        onConfigure: (db) async {
-          await db.execute('PRAGMA foreign_keys = ON');
-        },
-        onCreate: _onCreate,
-        onUpgrade: _onUpgrade,
-      ),
+    final databasesPath = await getDatabasesPath();
+
+    final path = join(
+      databasesPath,
+      databaseName,
+    );
+
+    return openDatabase(
+      path,
+      version: 2,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -36,30 +41,55 @@ class AppDatabase {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         email TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        firebase_uid TEXT
       )
     ''');
 
     await db.execute('''
       CREATE TABLE transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        firebaseId TEXT,
-        userId INTEGER NOT NULL,
+        firebase_id TEXT,
+        user_id INTEGER NOT NULL,
         title TEXT NOT NULL,
         value REAL NOT NULL,
-        isIncome INTEGER NOT NULL,
+        is_income INTEGER NOT NULL,
         category TEXT NOT NULL,
         date TEXT NOT NULL,
-        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
       )
     ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      try {
-        await db.execute('ALTER TABLE transactions ADD COLUMN firebaseId TEXT');
-      } catch (_) {}
+      final transactionColumns = await db.rawQuery(
+        'PRAGMA table_info(transactions)',
+      );
+
+      final hasFirebaseId = transactionColumns.any(
+        (column) => column['name'] == 'firebase_id',
+      );
+
+      if (!hasFirebaseId) {
+        await db.execute(
+          'ALTER TABLE transactions ADD COLUMN firebase_id TEXT',
+        );
+      }
+
+      final userColumns = await db.rawQuery(
+        'PRAGMA table_info(users)',
+      );
+
+      final hasFirebaseUid = userColumns.any(
+        (column) => column['name'] == 'firebase_uid',
+      );
+
+      if (!hasFirebaseUid) {
+        await db.execute(
+          'ALTER TABLE users ADD COLUMN firebase_uid TEXT',
+        );
+      }
     }
   }
 

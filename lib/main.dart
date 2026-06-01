@@ -45,6 +45,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.deepPurple,
           foregroundColor: Colors.white,
           elevation: 0,
+          centerTitle: false,
         ),
         cardTheme: CardThemeData(
           color: Colors.white,
